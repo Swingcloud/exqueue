@@ -56,14 +56,16 @@ defmodule Exqueue.QueuePipeline do
       Store.create_order(store, food)
       Store.send_notification(email, store, food)
       Store.update_member_data(user, store, food)
-      IO.inspect(message, label: "Message")
+      send_notification_to_store(message)
+      # IO.inspect(message, label: "Message")
+      message
     else
       Message.failed(message, "store-closed")
     end
   end
 
   def handle_failed(messages, _context) do
-    IO.inspect(messages, label: "Failed messages")
+    # IO.inspect(messages, label: "Failed messages")
 
     Enum.map(messages, fn
       %{status: {:failed, "store-closed"}} = message ->
@@ -72,5 +74,11 @@ defmodule Exqueue.QueuePipeline do
       message ->
         message
     end)
+  end
+
+  def send_notification_to_store(message) do
+    channel = message.metadata.amqp_channel
+    payload = "#{message.data.store},#{message.data.food}"
+    AMQP.Basic.publish(channel, "", "notification_queue", payload)
   end
 end
