@@ -11,7 +11,7 @@ defmodule Exqueue.QueuePipeline do
   @producer_config [
     queue: "food_order_queue",
     declare: [durable: true],
-    on_failure: :reject_and_requeue
+    on_failure: :reject_and_requeue_once
   ]
 
   def start_link(_args) do
@@ -52,10 +52,25 @@ defmodule Exqueue.QueuePipeline do
 
     # TODO
     # Store.available?(store)
+    if Store.available?(store) do
+      Store.create_order(store, food)
+      Store.send_notification(email, store, food)
+      Store.update_member_data(user, store, food)
+      IO.inspect(message, label: "Message")
+    else
+      Message.failed(message, "store-closed")
+    end
+  end
 
-    Store.create_order(store, food)
-    Store.send_notification(email, store, food)
-    Store.update_member_data(user, store, food)
-    IO.inspect(message, label: "Message")
+  def handle_failed(messages, _context) do
+    IO.inspect(messages, label: "Failed messages")
+
+    Enum.map(messages, fn
+      %{status: {:failed, "store-closed"}} = message ->
+        Message.configure_ack(message, on_failure: :reject)
+
+      message ->
+        message
+    end)
   end
 end

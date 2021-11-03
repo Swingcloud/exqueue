@@ -1,6 +1,8 @@
 defmodule Exqueue.Store do
   @moduledoc false
 
+  def available?("dough_bros"), do: false
+
   def available?(_store) do
     # mimic processing time
     Process.sleep(Enum.random(100..200))

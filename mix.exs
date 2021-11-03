@@ -24,7 +24,8 @@ defmodule Exqueue.MixProject do
   defp deps do
     [
       {:broadway, "~> 1.0.1"},
-      {:broadway_rabbitmq, "~> 0.7.0"}
+      {:broadway_rabbitmq, "~> 0.7.0"},
+      {:amqp, "~> 2.0"}
     ]
   end
 end
