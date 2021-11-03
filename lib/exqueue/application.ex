@@ -8,8 +8,7 @@ defmodule Exqueue.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Exqueue.Worker.start_link(arg)
-      # {Exqueue.Worker, arg}
+      Exqueue.QueuePipeline
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
